@@ -2,6 +2,64 @@
 
 ## Task-oriented content
 
+* New `evals/` (source checkout only): a vitals evaluation of the agent and
+  skill content. The same model answers each question without and with
+  `system_prompt(references = TRUE)`. A grader model scores the answers
+  against documented targets, and answers that must be code are executed, so
+  the difference between the two conditions measures the skills' effect.
+  Solver and grader are configurable by environment variable, so any
+  provider ellmer supports can be used (for example, grading Claude answers
+  with Gemini). vitals, ellmer, callr and tibble are added to Suggests.
+* New `evals/stress.R`: a 17-question stress kit built from the nlmixr2-ecosystem
+  findings and translation traps of the nlme-benchmark project (reserved
+  `SS`/`II` columns, `sigdig = 3` ODE tolerances, the bare-`rxControl()`
+  tolerance reset, `combined1` vs `combined2`, pinned objectives, conditional
+  `etaSE`, scoring bias against the realised draw, and more). Three samples
+  carry hidden checks that fail answers which run but are wrong. Select it
+  with `NLMIXR2LLM_EVAL_SET=stress` (or `all`).
+* New `estimation/references/structural-model.md`: base structural model
+  exploration as the first model-building step, adapted from AgentODE
+  (Yang et al. 2026). The agent reads the data's shape, proposes candidates
+  from nlmixr2lib, fits them under an identical stochastic model, and gates
+  and ranks them by OFV/AIC/BIC plus a VPC discrepancy. It then writes a
+  structured diagnosis, keeps a `structure-log.csv` experience log, and as a
+  fallback learns an unknown term with `nn()` and distills it into a closed
+  form. `model-building.md`, the estimation skill and the agent now follow the
+  order structure → stochastic model → covariates → evaluation. For single-endpoint
+  PK within its search space, the reference starts from an automated
+  nlmixr2auto search (with nlmixr2autoinit initial estimates) and continues
+  the loop for what that search cannot express (absorption delays, PD, TMDD).
+* New `estimation/references/neural-networks.md` covers models with embedded
+  neural networks (nlmixr2nn `nn()`): universal differential equations,
+  learned covariate relationships, no-BSV models, `nnControl()` and its
+  regularizers, inspecting a network with `nnEval()`, hand-written augmented
+  neural ODEs, and pitfalls. The estimation skill and the agent now steer any
+  model containing `nn()` to a method with gradients on the inner step
+  (`focei`, `laplace`/`agq`, `impmap`, `vae`/`emvi`/`fbvi`) rather than SAEM, and
+  a model with no etas to a population estimator with gradients (`lbfgsb3c`,
+  `nlminb`, `n1qn1`) rather than a derivative-free one.
+  nlmixr2nn is added to the estimation task's packages.
+* New `design` task skill for optimal design with PopED via babelmixr2
+  (`est = "poped"`): evaluating a planned study's expected precision and
+  shrinkage, optimizing sampling times and doses, comparing group sizes, Ds and ED
+  criteria, prior information, and power (`references/poped-recipes.md`).
+* New reference files carry the estimation-method, prior, uncertainty, and
+  adaptive-dosing content: `estimation/references/estimation-methods.md`
+  (mixed-effects vs pooled methods, variants, covariance tokens),
+  `estimation/references/priors.md`,
+  `simulation/references/uncertainty-and-priors.md`,
+  `simulation/references/adaptive-dosing.md`, and
+  `interop/references/babelmixr2-backends.md` (nlmer, saemix, FME).
+* The agent now declares the `Skill` tool, so it can load the skills it
+  routes to.
+* Method choice is framed by the between-subject-variability structure:
+  SAEM for many etas, FOCEi for few.
+* Corrections: SAEM supports `ll()` likelihoods; `outerOpt` already defaults
+  to `bobyqa`; `nlmixr2plot::traceplot()` is called explicitly because
+  `coda::traceplot()` masks it after `library(nlmixr2)` (nlmixr2/nlmixr2#419);
+  the useLinCmt (rxode2#1389) and tnpri (rxode2#1388) caveats are documented.
+* The agent plus any two task skills fits Codex's 32 KiB `AGENTS.md` cap, and
+  a test enforces it.
 * Skills are now organized around **tasks** instead of individual packages:
   `simulation`, `estimation`, `reporting`, and `interop` (NONMEM / Monolix /
   PKNCA). The per-package skills (`rxode2`, `nlmixr2`, `babelmixr2`,

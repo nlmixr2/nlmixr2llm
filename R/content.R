@@ -14,6 +14,8 @@
 #' * `"interop"` -- work with proprietary software: run models in NONMEM /
 #'   Monolix / PKNCA and import finished runs (babelmixr2, nonmem2rx,
 #'   monolix2rx).
+#' * `"design"` -- optimal design: evaluate a planned study and optimize its
+#'   sampling times and doses (babelmixr2, PopED).
 #'
 #' @return Character vector of task names.
 #' @seealso [list_packages()] for the packages each task covers.
@@ -188,10 +190,12 @@ system_prompt <- function(tasks = NULL,
 task_packages_table <- function() {
   list(
     simulation = c("rxode2", "nlmixr2lib"),
-    estimation = c("nlmixr2", "nlmixr2est", "nlmixr2extra", "nlmixr2lib"),
+    estimation = c("nlmixr2", "nlmixr2est", "nlmixr2extra", "nlmixr2lib",
+                   "nlmixr2nn", "nlmixr2auto", "nlmixr2autoinit"),
     reporting  = c("nlmixr2plot", "xpose.nlmixr2", "ggPMX", "nlmixr2rpt",
                    "shinyMixR"),
-    interop    = c("babelmixr2", "nonmem2rx", "monolix2rx")
+    interop    = c("babelmixr2", "nonmem2rx", "monolix2rx"),
+    design     = c("babelmixr2", "PopED")
   )
 }
 

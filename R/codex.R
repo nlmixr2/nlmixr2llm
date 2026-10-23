@@ -8,9 +8,9 @@
 #'
 #' Codex has a default limit of ~32 KiB for combined AGENTS.md content
 #' (`project_doc_max_bytes`); a warning is issued if the written file exceeds
-#' that size. The agent plus all four task skills is about 37 KiB, so for Codex
-#' subset with `tasks = ...` or `include = ...` (the agent alone is ~8 KiB and
-#' each skill ~7-8 KiB; the agent plus three skills is ~29 KiB).
+#' that size. The agent plus all five task skills is about 51 KiB, so for Codex
+#' subset with `tasks = ...` or `include = ...` (the agent alone is ~10 KiB and
+#' each skill ~7-10 KiB; the agent plus any two skills fits, up to ~29 KiB).
 #'
 #' For `scope = "user"` (which writes under your home directory) the function
 #' asks for confirmation in interactive sessions before writing. Non-interactive

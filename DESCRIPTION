@@ -24,11 +24,15 @@ Imports:
     tools,
     utils
 Suggests:
+    callr,
+    ellmer,
     knitr,
     pkgdown,
     rmarkdown,
     testthat (>= 3.0.0),
+    tibble,
+    vitals,
     withr
 VignetteBuilder: knitr
 Config/testthat/edition: 3
-RoxygenNote: 7.3.3
+Config/roxygen2/version: 8.1.0

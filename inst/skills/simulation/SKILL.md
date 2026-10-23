@@ -1,6 +1,6 @@
 ---
 name: simulation
-description: Use this skill when the user wants to simulate a pharmacokinetic or pharmacodynamic model in R with the nlmixr2 ecosystem — writing or editing an ODE model, building dosing / sampling event tables, single-subject or population simulation, clinical trial simulation, propagating parameter uncertainty, resampling fitted subjects, pulling a starting model from the nlmixr2 model library, or debugging rxode2 compile and solver errors. Triggers include `rxode2`, `rxSolve()`, `et()` / `eventTable()`, `d/dt(...)`, `nSub` / `nStud`, `omega=` / `thetaMat=`, "simulate this regimen", "what does exposure look like if...", `nlmixr2lib`, `readModelDb()`.
+description: Use this skill when the user wants to simulate a pharmacokinetic or pharmacodynamic model in R with the nlmixr2 ecosystem — writing or editing an ODE model, building dosing / sampling event tables, single-subject or population simulation, clinical trial simulation, propagating parameter uncertainty (fits, imports, or `prior()`s), adaptive dosing, resampling fitted subjects, pulling a starting model from the nlmixr2 model library, or debugging rxode2 compile and solver errors. Triggers include `rxode2`, `rxSolve()`, `et()` / `eventTable()`, `d/dt(...)`, `nSub` / `nStud`, `omega=` / `thetaMat=`, `prior()`, `bolus()`, `useLinCmt`, "simulate this regimen", "what does exposure look like if...", `nlmixr2lib`, `readModelDb()`.
 ---
 
 # Simulation — ODE-based PK/PD simulation with rxode2
@@ -49,7 +49,9 @@ Run it. Confirm it compiles and solves before handing it back.
 5. **Name the sampling argument.** `ev |> et(time = 0:24)`. An unnamed vector (`ev |> et(0:24)`) errors with `improper arguments to 'et'` when piped.
 6. **Units.** Keep `timeUnits` in `et()` consistent with the rate constants in `ini({})` (hours vs days is the classic bug).
 7. **Reproducibility.** For anything random set both seeds: `set.seed(5446); rxode2::rxSetSeed(5446)`.
-8. **Starting from the model library.** `nlmixr2lib::readModelDb("PK_2cmt_des")` returns a ready model function; `nlmixr2lib::modellib()` lists what is available (1/2/3-compartment PK, indirect response, tumor growth, published mAb models). Pipe modifications: `|> addEta("ka") |> addResErr("propSd")`.
+8. **Pipe; don't retype.** `x |> ini(...)` / `x |> model(...)` on a model or fit return a modified copy; use them for what-ifs and dosing protocols.
+9. **`useLinCmt`.** The ODE → `linCmt()` conversion renames compartments (`centr` → `central`). Function-style models still convert by default ([rxode2#1389](https://github.com/nlmixr2/rxode2/issues/1389)); pass `useLinCmt = FALSE`, or name the compartment `central`.
+10. **Starting from the model library.** `nlmixr2lib::readModelDb("PK_2cmt_des")` returns a ready model function; `nlmixr2lib::modellib()` lists what is available (1/2/3-compartment PK, indirect response, tumor growth, published mAb models). Pipe modifications: `|> addEta("ka") |> addResErr("propSd")`.
 
 ## Event-table cheatsheet
 
@@ -69,7 +71,7 @@ for (i in seq_len(nSub)) {
 ev <- ev |> add.sampling(time = 0:240)
 ```
 
-`etRbind()` stacks event tables. NONMEM-style data frames are accepted by `rxSolve()` directly. Avoid `etExpand()` on a table that already has sampling rows: in rxode2 4.1.1 it does not return.
+`etRbind()` stacks event tables. NONMEM-style data frames are accepted by `rxSolve()` directly.
 
 ## Population and trial simulation
 
@@ -81,7 +83,8 @@ confint(sim, "cp", level = 0.95) |> plot()             # median + interval ribbo
 ```
 
 - `nSub` draws new subjects from `omega`; `nStud` replicates trials, drawing population parameters from `thetaMat=` (from `fit$cov` or an imported `$thetaMat`).
-- Pass `omega=` / `sigma=` explicitly when the model has none or you want to override.
+- **From a fit or import, uncertainty is automatic:** `rxSolve(fit, ev, nStud = 100)` fills `thetaMat`, `dfSub`, `dfObs`. `prior()` lines in `ini({})` also drive the draws. See `references/uncertainty-and-priors.md` (prior forms, arguments, the `tnpri` caveat).
+- **Adaptive dosing** (titration, holds, rescue): pipe `bolus()`/`infuse()` rules onto the model or fit; see `references/adaptive-dosing.md`.
 - To honor **fitted** subjects (post-hoc ETAs from a fit or an imported NONMEM/Monolix model) build a per-subject parameter table and pass it as `params=`; see `references/population-simulation.md`.
 - Covariates: non-time-varying ones go as columns of the `params=` data frame; time-varying ones must be merged into the event table as columns.
 - `confint()` prints a note and draws only the median / prediction interval when fewer than 2500 simulated subjects (`nSub * nStud`) are available; the confidence band around the percentiles needs at least that many.
@@ -100,6 +103,8 @@ Done means executed and inspected, not written.
 | Symptom | Likely cause |
 |---|---|
 | `compartment 'X' not found` | `cmt=` does not match a `d/dt(X)` |
+| Output has `central`, model says `centr` | `linCmt()` conversion ran (rule 9) |
+| `cannot simulate from the prior` | prior mean ≠ estimate (e.g. a prior-bearing fit); `usePrior = FALSE` |
 | `parameter 'X' not found` | symbol not in `ini({})`, not a compartment, not in `params=`, not a data column |
 | `improper arguments to 'et'` | unnamed sampling vector piped into `et()`; use `et(time = ...)` |
 | Compilation fails | `model({})` syntax; surface the exact rxode2 message |

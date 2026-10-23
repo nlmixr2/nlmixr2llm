@@ -25,6 +25,8 @@ The tasks are:
 * `"interop"` -- work with proprietary software: run models in NONMEM /
   Monolix / PKNCA and import finished runs (babelmixr2, nonmem2rx,
   monolix2rx).
+* `"design"` -- optimal design: evaluate a planned study and optimize its
+  sampling times and doses (babelmixr2, PopED).
 }
 \examples{
 list_tasks()

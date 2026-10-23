@@ -11,7 +11,7 @@ Reporting turns a fit into evidence: does the model describe the data, how preci
 
 | Need | Use |
 |---|---|
-| Quick standard GOF set | `nlmixr2plot`: `plot(fit)` (list of ggplots), `traceplot(fit)` |
+| Quick standard GOF set | `nlmixr2plot`: `plot(fit)` (list of ggplots), `nlmixr2plot::traceplot(fit)` |
 | VPC | `nlmixr2plot::vpcPlot(fit, ...)`, `vpcPlotTad()`, `vpcCens()` for BLQ |
 | Individual / population prediction overlays | `nlmixr2est::augPred(fit)` then `plot()` |
 | Publication-style GOF with full control | `xpose.nlmixr2::xpose_data_nlmixr2(fit)` → xpose functions (`dv_vs_ipred()`, `res_vs_idv()`, `ind_plots()`, `eta_distrib()`, `prm_vs_iteration()`, ...) |
@@ -33,7 +33,7 @@ fit$parFixed                              # estimates, SE, %RSE, back-transforme
 fit$objDf                                 # OFV, AIC, BIC (SAEM: NA until fit$objf has been accessed once)
 
 plot(fit)                                 # standard GOF set: DV vs PRED/IPRED, residuals, individual fits
-traceplot(fit)                            # SAEM / FOCEi parameter history
+nlmixr2plot::traceplot(fit)               # SAEM / FOCEi parameter history (qualified: coda's traceplot() masks it)
 
 vpcPlot(fit, n = 500, log_y = TRUE)       # VPC: 90% PI with 90% CIs on the percentiles (pi = ci = c(0.05, 0.95))
 vpcPlot(fit, n = 500, pred_corr = TRUE, stratify = "DOSE")
@@ -53,7 +53,7 @@ Cover these before declaring a model adequate, and say which you looked at:
 3. **Individuals**: individual plots for a sample of subjects, including the worst-fitting ones.
 4. **Random effects**: ETA histograms / QQ plots and ETA-vs-covariate plots; report shrinkage (`fit$shrink`) and treat ETA-based conclusions as weak where shrinkage > ~30%.
 5. **Predictive check**: VPC (prediction-corrected when doses or covariates vary) with binning appropriate to the sampling design; observed percentiles inside the simulated CIs.
-6. **Convergence and precision**: `traceplot(fit)` flat in the final phase; SEs present and %RSE reasonable; nothing on a bound.
+6. **Convergence and precision**: `nlmixr2plot::traceplot(fit)` flat in the final phase; SEs present and %RSE reasonable; nothing on a bound.
 
 ## Publication-quality GOF with xpose
 

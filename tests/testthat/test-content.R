@@ -1,7 +1,7 @@
 test_that("list_tasks returns the four task skills", {
   expect_setequal(
     list_tasks(),
-    c("estimation", "interop", "reporting", "simulation")
+    c("design", "estimation", "interop", "reporting", "simulation")
   )
   expect_identical(list_skills(), list_tasks())
 })
@@ -396,4 +396,15 @@ test_that("install_positron instructions style prunes obsolete files", {
 
   expect_false(file.exists(legacy))
   expect_true(file.exists(file.path(dir, "simulation.instructions.md")))
+})
+
+test_that("the agent plus any two skills fits Codex's 32 KiB AGENTS.md cap", {
+  for (pair in utils::combn(list_tasks(), 2, simplify = FALSE)) {
+    tmp <- withr::local_tempdir()
+    path <- expect_no_warning(
+      install_codex(scope = "project", path = tmp, tasks = pair)
+    )
+    expect_lte(file.size(path), 32 * 1024,
+               label = paste("agent +", paste(pair, collapse = " + ")))
+  }
 })

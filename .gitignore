@@ -17,3 +17,6 @@
 
 # pkgdown output
 /docs/
+
+# vitals evaluation logs (evals/eval.R)
+/evals/logs/

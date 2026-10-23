@@ -15,10 +15,10 @@ fit <- nlmixr(model_fn, data, est = "nonmem",
 | Argument | Role |
 |---|---|
 | `modelName` | Output directory name. **Always set it**; unset or reused names collide. |
-| `runCommand` | NONMEM executable string, or a function for cluster submission (must return after outputs exist). Defaults to `getOption("babelmixr2.nonmem")`. |
+| `runCommand` | NONMEM executable string, or a function `FUN(ctl, directory, ui)` for cluster submission (must return after outputs exist); `NA` writes the files without running. Defaults to `getOption("babelmixr2.nonmem")`. |
 | `readRounding` | `FALSE` by default. Set `TRUE` to read partial results after a rounding-error termination. |
-| `est`, `maxeval`, `sigdig`, `sigl`, `tol` | Mirror NONMEM `$EST` settings. |
-| `advanOde` | ODE solver ADVAN used for the generated `$SUBROUTINES`. |
+| `est`, `maxeval`, `sigdig`, `sigl` | Mirror NONMEM `$EST` settings (`est` is `"focei"`, `"imp"`, `"its"`, or `"posthoc"`). |
+| `advanOde`, `tol`, `atol` | ODE solver ADVAN for the generated `$SUBROUTINES` (`"advan13"`, `"advan8"`, `"advan6"`) and its tolerances. |
 | `muRef` | babelmixr2 generates MU-referenced code by default; keep it unless comparing to a hand-written ctl. |
 | `cov` | Covariance step setting written to `$COV`. |
 
@@ -46,7 +46,7 @@ Arguments:
 - First argument: control stream (`.ctl` / `.mod`) **or** listing (`.lst` / `.res`); the rest is discovered beside it.
 - `lst`, `xml`, `phi`, `ext`, `cov`: extension or path overrides when the run uses non-default names.
 - `validate = TRUE` (the default): run the rxode2-vs-NONMEM comparison and populate `$ipredCompare` / `$predCompare`. Leave it on.
-- `save`: off by default; `TRUE` saves `<ctl>.qs` beside the source via `qs::qsave()`, and `load = TRUE` (the default) reuses it on the next call.
+- `save`: `NA` by default, which saves the parsed object automatically when translation plus validation takes longer than `saveTime` (15 s); `TRUE` always saves, `FALSE` never. It is written as an `.rds` beside the source (`saveRDS()`), and `load = TRUE` (the default) reuses it on the next call.
 - `inputData`: explicit dataset path when `$DATA` cannot be resolved relative to the ctl directory.
 - `thetaNames`, `etaNames`, `cmtNames`, `rename`: rename THETA/ETA/compartments to readable names during translation.
 
@@ -74,7 +74,7 @@ An **rxode2 UI object** (not an nlmixr2 fit). Useful slots:
 | `$etaData` | per-ID empirical Bayes ETAs |
 | `$ini` | tidy parameter table (THETA + variability) |
 | `$props$pop` | names of population (THETA) parameters |
-| `$thetaMat` | THETA variance/covariance for uncertainty simulation |
+| `$thetaMat` | NONMEM's full `$COV` matrix (thetas, sigma, omega). With `dfSub`/`dfObs` in the model metadata, `rxSolve(mod, ev, nStud = 100)` uses it automatically |
 | `$predData`, `$ipredData` | NONMEM PRED / IPRED |
 | `$predCompare`, `$ipredCompare`, `$iwresCompare` | rxode2 vs NONMEM differences (qualification) |
 
@@ -97,6 +97,7 @@ Non-zero differences point at an unsupported construct: unusual ADVAN, custom `$
 - Listing reports rounding errors — see the `read-rounding` article before trusting estimates.
 - Duplicate ETA names are not auto-renamed; fix the source ctl or use `etaNames=`.
 - `parameter not found` when solving — a THETA used only inside `$ERROR` did not propagate; patch the model.
+- Reading computed slots with `[[ ]]` (`mod[["thetaMat"]]`) returns `NULL`; use `$`.
 - Treating the result as an nlmixr2 fit — it is an rxode2 UI. `babelmixr2::as.nlmixr2(mod)` gives the fit when you need one.
 
 ## References

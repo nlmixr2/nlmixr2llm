@@ -8,7 +8,7 @@
     {
       "name": "nlmixr2llm",
       "source": ".",
-      "description": "Task-oriented skills (simulation, estimation, reporting, interop with NONMEM/Monolix) and an orchestrating agent for the nlmixr2 ecosystem.",
+      "description": "Task-oriented skills (simulation, estimation, reporting, interop with NONMEM/Monolix, optimal design) and an orchestrating agent for the nlmixr2 ecosystem.",
       "version": "0.2.0",
       "category": "data-science",
       "keywords": [

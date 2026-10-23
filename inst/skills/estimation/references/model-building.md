@@ -1,5 +1,7 @@
 # Model building, precision, and model comparison
 
+The order is data exploration → base structural model (`structural-model.md`) → stochastic model (etas, OMEGA blocks, residual error) → covariates → evaluation. This file covers the steps after the structure is chosen.
+
 ## Iterating with model piping
 
 `ini()` and `model()` work on a model function, a UI object, or a fit, returning a new UI object that can be fitted again.

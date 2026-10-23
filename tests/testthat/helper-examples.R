@@ -12,7 +12,7 @@
 example_packages <- c(
   "rxode2", "nlmixr2", "nlmixr2est", "nlmixr2data", "nlmixr2plot", "nlmixr2lib",
   "nlmixr2extra", "nlmixr2rpt", "onbrand", "xpose.nlmixr2", "xpose", "ggPMX",
-  "nonmem2rx", "monolix2rx", "babelmixr2", "dplyr", "tidyr", "withr"
+  "nonmem2rx", "monolix2rx", "babelmixr2", "PopED", "dplyr", "tidyr", "withr"
 )
 
 skip_unless_examples_enabled <- function() {
@@ -49,6 +49,10 @@ extract_code_blocks <- function(path) {
   if (length(fences) %% 2 != 0) {
     stop("Unbalanced code fences in ", path)
   }
+  if (!length(fences)) {
+    return(data.frame(file = character(), index = integer(), lang = character(),
+                      line = integer(), code = character(), stringsAsFactors = FALSE))
+  }
   opens <- fences[seq(1, length(fences), by = 2)]
   closes <- fences[seq(2, length(fences), by = 2)]
   data.frame(
@@ -71,7 +75,40 @@ example_skips <- c(
   "skills/interop/SKILL.md#2"                    = "placeholder paths only",
   "skills/interop/references/nonmem.md#1"        = "runs NONMEM",
   "skills/interop/references/monolix.md#1"       = "runs Monolix",
-  "skills/estimation/references/model-building.md#3" = "model({}) fragment, not a complete call"
+  "skills/estimation/references/model-building.md#3" = "model({}) fragment, not a complete call",
+  "skills/estimation/references/priors.md#2"         = "needs nlmixr2bayes and a Stan toolchain",
+  "skills/design/SKILL.md#2"                     = "poped_optim() searches run for minutes",
+  "skills/design/references/poped-recipes.md#2"  = "ED optimization runs for minutes",
+  "skills/design/references/poped-recipes.md#3"  = "needs the adult and pediatric databases of ex.11",
+  "skills/design/references/poped-recipes.md#4"  = "needs the weight-covariate model of ex.12",
+  "skills/estimation/references/neural-networks.md#4" = "refits the UDE of block #1 for 400 rounds"
+)
+
+# Blocks that run but are too slow for every push / PR, keyed "file#index" ->
+# reason. They are skipped unless NLMIXR2LLM_SLOW_EXAMPLES is "true" (run
+# everything) or "only" (run just these); the weekly slow-examples.yaml
+# workflow uses "only".
+example_slow <- c(
+  "skills/estimation/references/neural-networks.md#2" = "multi-eta focei fit training an nn() for 200 joint rounds",
+  "skills/estimation/references/structural-model.md#3" = "nlmixr2auto stepwise search fits several SAEM models"
+)
+
+# "false" (default), "true", or "only".
+slow_examples_mode <- function() {
+  mode <- tolower(Sys.getenv("NLMIXR2LLM_SLOW_EXAMPLES", "false"))
+  if (mode %in% c("true", "only")) mode else "false"
+}
+
+# Packages a single block needs beyond example_packages, keyed "file#index".
+# The block is skipped (not failed) when one is missing, so an optional add-on
+# such as nlmixr2nn (not on CRAN) does not disable the whole suite.
+example_block_packages <- list(
+  "skills/estimation/references/neural-networks.md#1" = "nlmixr2nn",
+  "skills/estimation/references/neural-networks.md#2" = "nlmixr2nn",
+  "skills/estimation/references/neural-networks.md#3" = c("nlmixr2nn", "lbfgsb3c"),
+  "skills/estimation/references/neural-networks.md#5" = "nlmixr2nn",
+  "skills/estimation/references/structural-model.md#2" = "nlmixr2autoinit",
+  "skills/estimation/references/structural-model.md#3" = c("nlmixr2autoinit", "nlmixr2auto")
 )
 
 # Top-level statements that reference a placeholder path (a user's own files)
@@ -165,6 +202,20 @@ example_fixture_env <- function() {
   env
 }
 
+# The warfarin model and design used by the design skill's recipes, built by
+# evaluating the skill's own first example so the two cannot drift apart.
+design_fixture <- function(fixture) {
+  env <- new.env(parent = fixture)
+  block <- extract_code_blocks(file.path(system.file(package = "nlmixr2llm"),
+                                         "skills", "design", "SKILL.md"))[1, ]
+  for (e in parse(text = block$code)) {
+    if (!grepl("^(res|shrinkage|plot_model_prediction)", paste(deparse(e), collapse = ""))) {
+      suppressMessages(eval(e, envir = env))
+    }
+  }
+  list(warf = env$warf, e = env$e, db = env$db)
+}
+
 # Per-block fixture overrides, keyed "file#index": objects that replace the
 # defaults for that block only (e.g. a nonmem2rx-converted model where the
 # snippet reads slots only such an object has). Evaluated in a child of the
@@ -178,7 +229,8 @@ example_block_overrides <- function(fixture) {
   }
   list(
     "skills/interop/references/nonmem.md#3" = function() list(mod = nm()),
-    "skills/simulation/references/population-simulation.md#3" = function() list(mod = nm())
+    "skills/simulation/references/population-simulation.md#3" = function() list(mod = nm()),
+    "skills/design/references/poped-recipes.md#1" = function() design_fixture(fixture)
   )
 }
 
@@ -210,7 +262,10 @@ example_warning_allowlist <- c(
 # keyed "file#index". Kept separate from the global list so a genuinely broken
 # snippet elsewhere is not masked.
 example_block_warning_allowlist <- list(
-  "skills/interop/references/monolix.md#2" = "NAs introduced by coercion"  # monolix2rx parser
+  "skills/interop/references/monolix.md#2" = "NAs introduced by coercion",  # monolix2rx parser
+  # an eta passed into nn() is a network input, so it cannot be mu-referenced
+  "skills/estimation/references/neural-networks.md#1" = "non-mu referenced",
+  "skills/estimation/references/neural-networks.md#2" = "non-mu referenced"
 )
 
 # Evaluate one block in a fresh child of the fixture environment, in a working

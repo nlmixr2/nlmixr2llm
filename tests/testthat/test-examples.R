@@ -7,6 +7,13 @@ test_that("every bundled markdown file has balanced code fences", {
   }
 })
 
+test_that("slow and per-block package lists only name blocks that exist", {
+  blocks <- do.call(rbind, lapply(example_source_files(), extract_code_blocks))
+  keys <- paste0(blocks$file, "#", blocks$index)
+  named <- c(names(example_slow), names(example_block_packages))
+  expect_true(all(named %in% keys), info = paste(setdiff(named, keys), collapse = ", "))
+})
+
 test_that("skip list only names blocks that exist", {
   blocks <- do.call(rbind, lapply(example_source_files(), extract_code_blocks))
   keys <- paste0(blocks$file, "#", blocks$index)
@@ -69,6 +76,12 @@ if (!examples_enabled) {
       if (key %in% names(example_skips)) {
         skip(example_skips[[key]])
       }
+      for (p in example_block_packages[[key]]) skip_if_not_installed(p)
+      slow <- key %in% names(example_slow)
+      if (slow && slow_examples_mode() == "false") {
+        skip(paste0("slow (", example_slow[[key]], "); set NLMIXR2LLM_SLOW_EXAMPLES=true"))
+      }
+      if (!slow && slow_examples_mode() == "only") skip("not a slow example")
       workdir <- file.path(root_workdir, gsub("[^A-Za-z0-9]+", "_", block$file))
       dir.create(workdir, showWarnings = FALSE, recursive = TRUE)
       result <- NULL

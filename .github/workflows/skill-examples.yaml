@@ -3,7 +3,8 @@
 # tests/testthat/test-examples.R). Kept out of the R-CMD-check matrix because it
 # fits real models and needs the whole modeling stack installed. The weekly
 # schedule is the point: it catches upstream API drift that would otherwise
-# only surface when an LLM writes broken code from these snippets.
+# only surface when an LLM writes broken code from these snippets. Blocks in
+# `example_slow` are skipped here and run weekly by slow-examples.yaml.
 on:
   push:
     branches: [main, master]
@@ -69,9 +70,14 @@ jobs:
             any::xpose.nlmixr2
             any::xpose
             any::ggPMX
+            any::lbfgsb3c
+            any::nlmixr2autoinit
+            any::nlmixr2auto
+            github::nlmixr2/nlmixr2nn
             any::nonmem2rx
             any::monolix2rx
             any::babelmixr2
+            any::PopED
             any::dplyr
             any::tidyr
 

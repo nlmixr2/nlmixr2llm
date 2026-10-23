@@ -64,7 +64,7 @@ With only the `.mlxtran`, `monolix2rx()` still succeeds (message: `cannot find i
 
 ### What you get back
 
-An **rxode2 model** (not an nlmixr2 fit) carrying `$theta` (fixed effects), `$omega` (random-effect covariance), the μ-referencing table, compartments / state variables, and a normalized R-function model body. Solve it with `et()` + `rxSolve()`.
+An **rxode2 model** (not an nlmixr2 fit) carrying `$theta` (fixed effects), `$omega` (random-effect covariance), `$thetaMat` plus `dfSub`/`dfObs` metadata (so `rxSolve(mod, ev, nStud = 100)` simulates parameter uncertainty directly), the μ-referencing table, compartments / state variables, and a normalized R-function model body. Solve it with `et()` + `rxSolve()`.
 
 ### Library models
 

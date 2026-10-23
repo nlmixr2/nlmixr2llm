@@ -1,0 +1,82 @@
+# Runs only the skill code blocks listed in `example_slow`
+# (tests/testthat/helper-examples.R): examples that are important to keep
+# working but too slow for skill-examples.yaml on every push / PR. Weekly, like
+# nlmixr2est's slow-tests.yaml, plus on demand.
+on:
+  schedule:
+    - cron: '47 6 * * 6'   # Saturdays 06:47 UTC
+  workflow_dispatch:
+
+name: slow-examples.yaml
+
+# Never overlap runs; let an in-progress one finish.
+concurrency:
+  group: slow-examples
+  cancel-in-progress: false
+
+permissions: read-all
+
+jobs:
+  slow-examples:
+    runs-on: ubuntu-latest
+    name: slow skill code examples (ubuntu, R release)
+
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      R_KEEP_PKG_SOURCE: yes
+      NOT_CRAN: true
+      NLMIXR2LLM_RUN_EXAMPLES: true
+      NLMIXR2LLM_SLOW_EXAMPLES: only
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: r-lib/actions/setup-pandoc@v2   # ggPMX::pmx_report() renders R Markdown
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: 'release'
+          use-public-rspm: true
+
+      # The modeling stack is deliberately not in DESCRIPTION (the package has
+      # no runtime dependency on it); install it here for this job only.
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: |
+            any::testthat
+            any::withr
+            any::rxode2
+            any::units
+            any::nlmixr2
+            any::nlmixr2est
+            any::nlmixr2data
+            any::nlmixr2plot
+            any::nlmixr2lib
+            any::nlmixr2extra
+            any::nlmixr2rpt
+            any::onbrand
+            any::xpose.nlmixr2
+            any::xpose
+            any::ggPMX
+            any::lbfgsb3c
+            any::nlmixr2autoinit
+            any::nlmixr2auto
+            github::nlmixr2/nlmixr2nn
+            any::nonmem2rx
+            any::monolix2rx
+            any::babelmixr2
+            any::PopED
+            any::dplyr
+            any::tidyr
+
+      - name: Run the slow skill code examples
+        run: |
+          Rscript -e '
+            res <- testthat::test_local(filter = "examples", reporter = "progress",
+                                        stop_on_failure = FALSE)
+            df <- as.data.frame(res)
+            cat(sprintf("\n%d blocks: %d passed, %d failed, %d skipped\n",
+                        nrow(df), sum(df$passed > 0 & df$failed == 0 & !df$skipped),
+                        sum(df$failed > 0 | df$error), sum(df$skipped)))
+            if (any(df$failed > 0 | df$error)) quit(status = 1)
+          '
