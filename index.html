@@ -87,9 +87,9 @@
 </tr>
 <tr>
 <td><code>estimation</code></td>
-<td>Fit population PK/PD models (SAEM, FOCEi, nlme), model building, covariates, standard errors, bootstrap, likelihood profiling, model comparison</td>
+<td>Fit population PK/PD models (SAEM, FOCEi, nlme), model building, covariates, standard errors, bootstrap, likelihood profiling, model comparison, neural networks inside models</td>
 <td>
-<a href="https://github.com/nlmixr2/nlmixr2" class="external-link"><code>nlmixr2</code></a>, <a href="https://github.com/nlmixr2/nlmixr2extra" class="external-link"><code>nlmixr2extra</code></a>, <code>nlmixr2lib</code>
+<a href="https://github.com/nlmixr2/nlmixr2" class="external-link"><code>nlmixr2</code></a>, <a href="https://github.com/nlmixr2/nlmixr2extra" class="external-link"><code>nlmixr2extra</code></a>, <code>nlmixr2lib</code>, <a href="https://github.com/nlmixr2/nlmixr2nn" class="external-link"><code>nlmixr2nn</code></a>, <a href="https://github.com/ucl-pharmacometrics/nlmixr2auto" class="external-link"><code>nlmixr2auto</code></a>
 </td>
 </tr>
 <tr>
@@ -106,9 +106,16 @@
 <a href="https://github.com/nlmixr2/babelmixr2" class="external-link"><code>babelmixr2</code></a>, <a href="https://github.com/nlmixr2/nonmem2rx" class="external-link"><code>nonmem2rx</code></a>, <a href="https://github.com/nlmixr2/monolix2rx" class="external-link"><code>monolix2rx</code></a>
 </td>
 </tr>
+<tr>
+<td><code>design</code></td>
+<td>Optimal design for a planned study: expected precision (RSE%) and shrinkage, optimizing sampling times and doses, comparing group sizes, Ds / ED criteria, prior information, power</td>
+<td>
+<a href="https://github.com/nlmixr2/babelmixr2" class="external-link"><code>babelmixr2</code></a>, <a href="https://github.com/andrewhooker/PopED" class="external-link"><code>PopED</code></a>
+</td>
+</tr>
 </tbody>
 </table>
-<p>Each skill is a directory: a compact <code>SKILL.md</code> (~8 KiB) plus <code>references/*.md</code> files with extra depth (engine-specific NONMEM / Monolix notes, population-simulation patterns, model-building and precision recipes, the nlmixr2rpt YAML structure). The <code>nlmixr2verse</code> agent (~8 KiB) holds the ecosystem map by task, routing rules, the shared model-language conventions, and how the stages hand off to one another (simulate ⇄ estimate → report; import → qualify → simulate).</p>
+<p>Each skill is a directory: a compact <code>SKILL.md</code> (~7-10 KiB) plus <code>references/*.md</code> files with extra depth (engine-specific NONMEM / Monolix notes, babelmixr2’s in-R backends and PopED, population-simulation patterns, uncertainty and priors, adaptive dosing, the full estimation-method list, priors in estimation, model-building and precision recipes, the nlmixr2rpt YAML structure). The <code>nlmixr2verse</code> agent (~10 KiB) holds the ecosystem map by task, routing rules, the shared model-language conventions, and how the stages hand off to one another (simulate ⇄ estimate → report; import → qualify → simulate).</p>
 </div>
 <div class="section level2">
 <h2 id="install-r-package">Install (R package)<a class="anchor" aria-label="anchor" href="#install-r-package"></a>
@@ -129,7 +136,7 @@
 <span><span class="va">prompt</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/system_prompt.html">system_prompt</a></span><span class="op">(</span>tasks <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"simulation"</span>, <span class="st">"estimation"</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Example: with ellmer</span></span>
-<span><span class="va">chat</span> <span class="op">&lt;-</span> <span class="fu">ellmer</span><span class="fu">::</span><span class="fu">chat_anthropic</span><span class="op">(</span>system_prompt <span class="op">=</span> <span class="va">prompt</span><span class="op">)</span></span>
+<span><span class="va">chat</span> <span class="op">&lt;-</span> <span class="fu">ellmer</span><span class="fu">::</span><span class="fu"><a href="https://ellmer.tidyverse.org/reference/chat_anthropic.html" class="external-link">chat_anthropic</a></span><span class="op">(</span>system_prompt <span class="op">=</span> <span class="va">prompt</span><span class="op">)</span></span>
 <span><span class="va">chat</span><span class="op">$</span><span class="fu">chat</span><span class="op">(</span><span class="st">"Write a one-compartment PK model with first-order absorption and simulate 100 mg q12h for 5 days."</span><span class="op">)</span></span></code></pre></div>
 <p>Add <code>references = TRUE</code> to include each skill’s supporting reference files.</p>
 </div>
@@ -152,7 +159,7 @@
 <span></span>
 <span><span class="co"># Global ~/.codex/AGENTS.md</span></span>
 <span><span class="fu"><a href="reference/install_codex.html">install_codex</a></span><span class="op">(</span>scope <span class="op">=</span> <span class="st">"user"</span>, include <span class="op">=</span> <span class="st">"agents"</span>, mode <span class="op">=</span> <span class="st">"append"</span><span class="op">)</span></span></code></pre></div>
-<p>Codex enforces a default 32 KiB cap on combined <code>AGENTS.md</code> content. The agent plus all four skills is ~37 KiB; the agent alone is ~8 KiB and each skill ~7-8 KiB, so the agent plus up to three skills fits (~29 KiB). <code><a href="reference/install_codex.html">install_codex()</a></code> warns when the written file exceeds the cap.</p>
+<p>Codex enforces a default 32 KiB cap on combined <code>AGENTS.md</code> content. The agent plus all five skills is ~51 KiB; the agent alone is ~10 KiB and each skill ~7-10 KiB, so the agent plus any two skills fits (up to ~29 KiB, enforced by a package test). <code><a href="reference/install_codex.html">install_codex()</a></code> warns when the written file exceeds the cap.</p>
 </div>
 <div class="section level3">
 <h3 id="install-into-positron-assistant">Install into Positron Assistant<a class="anchor" aria-label="anchor" href="#install-into-positron-assistant"></a>
@@ -270,10 +277,11 @@
     ├── agents/
     │   └── nlmixr2verse.md
     └── skills/
-        ├── simulation/    # SKILL.md + references/population-simulation.md
-        ├── estimation/    # SKILL.md + references/model-building.md
+        ├── simulation/    # SKILL.md + references/population-simulation.md, uncertainty-and-priors.md, adaptive-dosing.md
+        ├── estimation/    # SKILL.md + references/model-building.md, estimation-methods.md, priors.md
         ├── reporting/     # SKILL.md + references/nlmixr2rpt.md
-        └── interop/       # SKILL.md + references/nonmem.md, monolix.md</code></pre>
+        ├── interop/       # SKILL.md + references/nonmem.md, monolix.md, babelmixr2-backends.md
+        └── design/        # SKILL.md + references/poped-recipes.md</code></pre>
 </div>
 <div class="section level2">
 <h2 id="contributing">Contributing<a class="anchor" aria-label="anchor" href="#contributing"></a>

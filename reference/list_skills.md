@@ -16,5 +16,5 @@ Character vector of skill names.
 
 ``` r
 list_skills()
-#> [1] "estimation" "interop"    "reporting"  "simulation"
+#> [1] "design"     "estimation" "interop"    "reporting"  "simulation"
 ```

@@ -24,7 +24,9 @@ models (nlmixr2, nlmixr2extra). \* \`"reporting"\` – diagnostics, VPCs,
 tables, and Word/PowerPoint reports (nlmixr2plot, xpose.nlmixr2, ggPMX,
 nlmixr2rpt, shinyMixR). \* \`"interop"\` – work with proprietary
 software: run models in NONMEM / Monolix / PKNCA and import finished
-runs (babelmixr2, nonmem2rx, monolix2rx).
+runs (babelmixr2, nonmem2rx, monolix2rx). \* \`"design"\` – optimal
+design: evaluate a planned study and optimize its sampling times and
+doses (babelmixr2, PopED).
 
 ## See also
 
@@ -34,5 +36,5 @@ runs (babelmixr2, nonmem2rx, monolix2rx).
 
 ``` r
 list_tasks()
-#> [1] "estimation" "interop"    "reporting"  "simulation"
+#> [1] "design"     "estimation" "interop"    "reporting"  "simulation"
 ```

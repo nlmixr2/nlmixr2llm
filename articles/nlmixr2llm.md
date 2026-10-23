@@ -9,9 +9,10 @@ plus one skill per task for on-demand depth:
 | Task | Covers | Packages |
 |----|----|----|
 | `simulation` | ODE model authoring, event tables, population and trial simulation | rxode2, nlmixr2lib |
-| `estimation` | Fitting population PK/PD models, model building, precision | nlmixr2, nlmixr2extra, nlmixr2lib |
+| `estimation` | Fitting population PK/PD models, model building, precision, neural networks in models | nlmixr2, nlmixr2extra, nlmixr2lib, nlmixr2nn, nlmixr2auto |
 | `reporting` | GOF diagnostics, VPCs, parameter tables, Word / PowerPoint reports | nlmixr2plot, xpose.nlmixr2, ggPMX, nlmixr2rpt, shinyMixR |
 | `interop` | Running models in NONMEM / Monolix / PKNCA; importing and qualifying finished runs | babelmixr2, nonmem2rx, monolix2rx |
+| `design` | Optimal design: evaluating and optimizing a planned study | babelmixr2, PopED |
 
 The same content can be used three ways:
 
@@ -36,14 +37,15 @@ library(nlmixr2llm)
 ``` r
 
 list_tasks()
-#> [1] "estimation" "interop"    "reporting"  "simulation"
+#> [1] "design"     "estimation" "interop"    "reporting"  "simulation"
 list_agents()
 #> [1] "nlmixr2verse"
 list_packages()
-#>  [1] "babelmixr2"    "ggPMX"         "monolix2rx"    "nlmixr2"      
-#>  [5] "nlmixr2est"    "nlmixr2extra"  "nlmixr2lib"    "nlmixr2plot"  
-#>  [9] "nlmixr2rpt"    "nonmem2rx"     "rxode2"        "shinyMixR"    
-#> [13] "xpose.nlmixr2"
+#>  [1] "babelmixr2"      "ggPMX"           "monolix2rx"      "nlmixr2"        
+#>  [5] "nlmixr2auto"     "nlmixr2autoinit" "nlmixr2est"      "nlmixr2extra"   
+#>  [9] "nlmixr2lib"      "nlmixr2nn"       "nlmixr2plot"     "nlmixr2rpt"     
+#> [13] "nonmem2rx"       "PopED"           "rxode2"          "shinyMixR"      
+#> [17] "xpose.nlmixr2"
 list_packages(tasks = "interop")
 #> [1] "babelmixr2" "monolix2rx" "nonmem2rx"
 ```
@@ -76,7 +78,8 @@ demand.
 ``` r
 
 list_skill_files("interop")
-#> [1] "SKILL.md"              "references/monolix.md" "references/nonmem.md"
+#> [1] "SKILL.md"                          "references/babelmixr2-backends.md"
+#> [3] "references/monolix.md"             "references/nonmem.md"
 ```
 
 ## 1. Use as a system prompt with any LLM client
@@ -90,7 +93,7 @@ to whichever client you use.
 
 prompt <- system_prompt(tasks = c("simulation", "estimation"))
 nchar(prompt)
-#> [1] 23621
+#> [1] 29183
 ```
 
 By default
@@ -120,8 +123,11 @@ chat$chat(
 )
 ```
 
-The same prompt works with any `ellmer` backend (`chat_openai()`,
-`chat_google_gemini()`, `chat_ollama()`, …).
+The same prompt works with any `ellmer` backend
+([`chat_openai()`](https://ellmer.tidyverse.org/reference/chat_openai.html),
+[`chat_google_gemini()`](https://ellmer.tidyverse.org/reference/chat_google_gemini.html),
+[`chat_ollama()`](https://ellmer.tidyverse.org/reference/chat_ollama.html),
+…).
 
 ### With the Anthropic SDK directly (e.g., via `httr2`)
 
@@ -193,17 +199,18 @@ install_codex(scope = "user", mode = "append")
 
 Codex enforces a default 32 KiB cap on combined `AGENTS.md` content
 (`project_doc_max_bytes` in `~/.codex/config.toml`). The agent plus all
-four skills is ~37 KiB, above the cap. The `nlmixr2verse` agent is ~8
+five skills is ~51 KiB, above the cap. The `nlmixr2verse` agent is ~10
 KiB and is always included whole when agents are requested;
-`tasks = ...` subsets the skills (~8 KiB each). For Codex, pick the
-tasks you actually need:
+`tasks = ...` subsets the skills (~7-10 KiB each). The agent plus any
+two skills fits (up to ~29 KiB; a package test enforces this), so pick
+the tasks you actually need:
 
 ``` r
 
-# Agent plus the two most common tasks (~22 KiB); three tasks (~29 KiB) also fit
+# Agent plus the two most common tasks (~26 KiB); three tasks do not fit
 install_codex(scope = "project", tasks = c("simulation", "estimation"))
 
-# Just the agent (~8 KiB) -- routing and conventions only
+# Just the agent (~10 KiB) -- routing and conventions only
 install_codex(scope = "project", include = "agents")
 ```
 

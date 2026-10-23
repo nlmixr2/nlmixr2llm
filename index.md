@@ -25,17 +25,21 @@ is shipped two ways:
 | Task | What it covers | Packages |
 |----|----|----|
 | `simulation` | Author and debug ODE PK/PD models, event tables, single-subject / population / clinical-trial simulation, parameter uncertainty, resampling fitted subjects, the model library | [`rxode2`](https://github.com/nlmixr2/rxode2), [`nlmixr2lib`](https://github.com/nlmixr2/nlmixr2lib) |
-| `estimation` | Fit population PK/PD models (SAEM, FOCEi, nlme), model building, covariates, standard errors, bootstrap, likelihood profiling, model comparison | [`nlmixr2`](https://github.com/nlmixr2/nlmixr2), [`nlmixr2extra`](https://github.com/nlmixr2/nlmixr2extra), `nlmixr2lib` |
+| `estimation` | Fit population PK/PD models (SAEM, FOCEi, nlme), model building, covariates, standard errors, bootstrap, likelihood profiling, model comparison, neural networks inside models | [`nlmixr2`](https://github.com/nlmixr2/nlmixr2), [`nlmixr2extra`](https://github.com/nlmixr2/nlmixr2extra), `nlmixr2lib`, [`nlmixr2nn`](https://github.com/nlmixr2/nlmixr2nn), [`nlmixr2auto`](https://github.com/ucl-pharmacometrics/nlmixr2auto) |
 | `reporting` | Goodness-of-fit diagnostics, VPCs, augmented predictions, parameter tables, Word / PowerPoint / R Markdown reports, interactive review | [`nlmixr2plot`](https://github.com/nlmixr2/nlmixr2plot), [`xpose.nlmixr2`](https://github.com/nlmixr2/xpose.nlmixr2), [`ggPMX`](https://github.com/ggPMXdevelopment/ggPMX), [`nlmixr2rpt`](https://github.com/nlmixr2/nlmixr2rpt), [`shinyMixR`](https://github.com/RichardHooijmaijers/shinyMixR) |
 | `interop` | Run an nlmixr2 model in NONMEM / Monolix / PKNCA; import finished NONMEM or Monolix runs into R and qualify the translation; cross-engine comparison | [`babelmixr2`](https://github.com/nlmixr2/babelmixr2), [`nonmem2rx`](https://github.com/nlmixr2/nonmem2rx), [`monolix2rx`](https://github.com/nlmixr2/monolix2rx) |
+| `design` | Optimal design for a planned study: expected precision (RSE%) and shrinkage, optimizing sampling times and doses, comparing group sizes, Ds / ED criteria, prior information, power | [`babelmixr2`](https://github.com/nlmixr2/babelmixr2), [`PopED`](https://github.com/andrewhooker/PopED) |
 
-Each skill is a directory: a compact `SKILL.md` (~8 KiB) plus
+Each skill is a directory: a compact `SKILL.md` (~7-10 KiB) plus
 `references/*.md` files with extra depth (engine-specific NONMEM /
-Monolix notes, population-simulation patterns, model-building and
-precision recipes, the nlmixr2rpt YAML structure). The `nlmixr2verse`
-agent (~8 KiB) holds the ecosystem map by task, routing rules, the
-shared model-language conventions, and how the stages hand off to one
-another (simulate ⇄ estimate → report; import → qualify → simulate).
+Monolix notes, babelmixr2’s in-R backends and PopED,
+population-simulation patterns, uncertainty and priors, adaptive dosing,
+the full estimation-method list, priors in estimation, model-building
+and precision recipes, the nlmixr2rpt YAML structure). The
+`nlmixr2verse` agent (~10 KiB) holds the ecosystem map by task, routing
+rules, the shared model-language conventions, and how the stages hand
+off to one another (simulate ⇄ estimate → report; import → qualify →
+simulate).
 
 ## Install (R package)
 
@@ -86,9 +90,9 @@ install_codex(scope = "user", include = "agents", mode = "append")
 ```
 
 Codex enforces a default 32 KiB cap on combined `AGENTS.md` content. The
-agent plus all four skills is ~37 KiB; the agent alone is ~8 KiB and
-each skill ~7-8 KiB, so the agent plus up to three skills fits (~29
-KiB).
+agent plus all five skills is ~51 KiB; the agent alone is ~10 KiB and
+each skill ~7-10 KiB, so the agent plus any two skills fits (up to ~29
+KiB, enforced by a package test).
 [`install_codex()`](https://john-harrold.github.io/nlmixr2llm/reference/install_codex.md)
 warns when the written file exceeds the cap.
 
@@ -187,10 +191,11 @@ package uses) so the repo doubles as a plugin source:
         ├── agents/
         │   └── nlmixr2verse.md
         └── skills/
-            ├── simulation/    # SKILL.md + references/population-simulation.md
-            ├── estimation/    # SKILL.md + references/model-building.md
+            ├── simulation/    # SKILL.md + references/population-simulation.md, uncertainty-and-priors.md, adaptive-dosing.md
+            ├── estimation/    # SKILL.md + references/model-building.md, estimation-methods.md, priors.md
             ├── reporting/     # SKILL.md + references/nlmixr2rpt.md
-            └── interop/       # SKILL.md + references/nonmem.md, monolix.md
+            ├── interop/       # SKILL.md + references/nonmem.md, monolix.md, babelmixr2-backends.md
+            └── design/        # SKILL.md + references/poped-recipes.md
 
 ## Contributing
 

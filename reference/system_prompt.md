@@ -53,5 +53,5 @@ regardless of \`tasks\`; \`tasks\` only subsets the skills.
 ``` r
 prompt <- system_prompt(tasks = "simulation")
 nchar(prompt)
-#> [1] 14924
+#> [1] 18183
 ```

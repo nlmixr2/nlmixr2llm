@@ -25,10 +25,11 @@ Character vector of package names.
 
 ``` r
 list_packages()
-#>  [1] "babelmixr2"    "ggPMX"         "monolix2rx"    "nlmixr2"      
-#>  [5] "nlmixr2est"    "nlmixr2extra"  "nlmixr2lib"    "nlmixr2plot"  
-#>  [9] "nlmixr2rpt"    "nonmem2rx"     "rxode2"        "shinyMixR"    
-#> [13] "xpose.nlmixr2"
+#>  [1] "PopED"           "babelmixr2"      "ggPMX"           "monolix2rx"     
+#>  [5] "nlmixr2"         "nlmixr2auto"     "nlmixr2autoinit" "nlmixr2est"     
+#>  [9] "nlmixr2extra"    "nlmixr2lib"      "nlmixr2nn"       "nlmixr2plot"    
+#> [13] "nlmixr2rpt"      "nonmem2rx"       "rxode2"          "shinyMixR"      
+#> [17] "xpose.nlmixr2"  
 list_packages(tasks = "interop")
 #> [1] "babelmixr2" "monolix2rx" "nonmem2rx" 
 ```

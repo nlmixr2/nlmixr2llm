@@ -26,5 +26,6 @@ Character vector of paths relative to the skill directory, with
 
 ``` r
 list_skill_files("interop")
-#> [1] "SKILL.md"              "references/monolix.md" "references/nonmem.md" 
+#> [1] "SKILL.md"                          "references/babelmixr2-backends.md"
+#> [3] "references/monolix.md"             "references/nonmem.md"             
 ```
