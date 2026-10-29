@@ -5,6 +5,9 @@
 # schedule is the point: it catches upstream API drift that would otherwise
 # only surface when an LLM writes broken code from these snippets. Blocks in
 # `example_slow` are skipped here and run weekly by slow-examples.yaml.
+# Stacked PRs (based on another PR's branch) skip CI; a PR runs once it
+# targets main, including when it is retargeted there (edited, base
+# changed).  Other PR edits start a run whose jobs are all skipped.
 on:
   push:
     branches: [main, master]
@@ -15,6 +18,8 @@ on:
       - 'tests/testthat/test-examples.R'
       - '.github/workflows/skill-examples.yaml'
   pull_request:
+    branches: [main, master]
+    types: [opened, synchronize, reopened, edited]
     paths:
       - 'inst/agents/**'
       - 'inst/skills/**'
@@ -31,6 +36,7 @@ permissions: read-all
 
 jobs:
   skill-examples:
+    if: github.event_name != 'pull_request' || github.event.action != 'edited' || github.event.changes.base
     runs-on: ubuntu-latest
     name: skill code examples (ubuntu, R release)
 

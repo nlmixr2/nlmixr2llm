@@ -1,8 +1,13 @@
 # Workflow derived from https://github.com/r-lib/actions/tree/v2/examples
+# Stacked PRs (based on another PR's branch) skip CI; a PR runs once it
+# targets main, including when it is retargeted there (edited, base
+# changed).  Other PR edits start a run whose jobs are all skipped.
 on:
   push:
     branches: [main, master]
   pull_request:
+    branches: [main, master]
+    types: [opened, synchronize, reopened, edited]
   release:
     types: [published]
   workflow_dispatch:
@@ -13,6 +18,7 @@ permissions: read-all
 
 jobs:
   pkgdown:
+    if: github.event_name != 'pull_request' || github.event.action != 'edited' || github.event.changes.base
     runs-on: ubuntu-latest
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
