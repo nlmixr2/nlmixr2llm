@@ -14,13 +14,10 @@ on:
       - 'tests/testthat/helper-examples.R'
       - 'tests/testthat/test-examples.R'
       - '.github/workflows/skill-examples.yaml'
-  pull_request:
-    paths:
-      - 'inst/agents/**'
-      - 'inst/skills/**'
-      - 'tests/testthat/helper-examples.R'
-      - 'tests/testthat/test-examples.R'
-      - '.github/workflows/skill-examples.yaml'
+  # PR checks run only when a reviewer approves with the phrase
+  # "ready to be merged" (pushes to a PR branch no longer start CI).
+  pull_request_review:
+    types: [submitted]
   schedule:
     - cron: '17 6 * * 1'   # Mondays 06:17 UTC
   workflow_dispatch:
@@ -31,6 +28,7 @@ permissions: read-all
 
 jobs:
   skill-examples:
+    if: (github.event_name != 'pull_request_review' || (github.event.review.state == 'approved' && contains(github.event.review.body, 'ready to be merged')))
     runs-on: ubuntu-latest
     name: skill code examples (ubuntu, R release)
 

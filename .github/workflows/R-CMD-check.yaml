@@ -4,7 +4,10 @@
 on:
   push:
     branches: [main, master]
-  pull_request:
+  # PR checks run only when a reviewer approves with the phrase
+  # "ready to be merged" (pushes to a PR branch no longer start CI).
+  pull_request_review:
+    types: [submitted]
   workflow_dispatch:
 
 name: R-CMD-check.yaml
@@ -13,6 +16,7 @@ permissions: read-all
 
 jobs:
   R-CMD-check:
+    if: (github.event_name != 'pull_request_review' || (github.event.review.state == 'approved' && contains(github.event.review.body, 'ready to be merged')))
     runs-on: ${{ matrix.config.os }}
 
     name: ${{ matrix.config.os }} (${{ matrix.config.r }})
